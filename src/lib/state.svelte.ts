@@ -32,10 +32,12 @@ class QuizStateManager {
 		this.bookmarks = saved.bookmarks;
 		this.history = saved.history;
 
-		$effect(() => {
-			saveToStorage({
-				bookmarks: this.bookmarks,
-				history: this.history
+		$effect.root(() => {
+			$effect(() => {
+				saveToStorage({
+					bookmarks: this.bookmarks,
+					history: this.history
+				});
 			});
 		});
 	}
