@@ -20,6 +20,7 @@ If the repo has no `test` script in `package.json`, skip the test step and note 
 ## On Failure
 
 Use AskUserQuestion:
+
 - "Validation failed. How do you want to proceed?"
 - Options: "Fix first (cancel release)", "Skip validation and continue"
 

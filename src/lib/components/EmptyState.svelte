@@ -1,5 +1,6 @@
 <script lang="ts">
-	let { icon = 'bookmark', message = 'Nothing here yet' }: { icon?: string; message?: string } = $props();
+	let { icon = 'bookmark', message = 'Nothing here yet' }: { icon?: string; message?: string } =
+		$props();
 </script>
 
 <div class="empty-state">

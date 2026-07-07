@@ -24,12 +24,8 @@
 </script>
 
 <div class="filter-bar">
-	{#each filters as mode}
-		<button
-			class="filter-pill"
-			class:active={activeFilter === mode}
-			onclick={() => onchange(mode)}
-		>
+	{#each filters as mode (mode)}
+		<button class="filter-pill" class:active={activeFilter === mode} onclick={() => onchange(mode)}>
 			{FILTER_LABELS[mode]}
 			<span class="count">{getCount(mode)}</span>
 		</button>

@@ -46,19 +46,20 @@ markdown content with backticks, tables, and special characters breaks quoting.
 On startup, check for `.release-tmp/state.json`. If it exists, offer to resume.
 
 **State file schema:**
+
 ```json
 {
-  "phase": 1,
-  "issue_number": 52,
-  "issue_url": "https://github.com/...",
-  "version": "0.30.0",
-  "version_type": "minor",
-  "commit_msg": "feat(agent): add context routing (#52)",
-  "plan_file": ".plans/add-context-routing.md",
-  "title": "Add context-based model routing",
-  "labels": ["enhancement"],
-  "language": "en",
-  "repo_mode": "python"
+	"phase": 1,
+	"issue_number": 52,
+	"issue_url": "https://github.com/...",
+	"version": "0.30.0",
+	"version_type": "minor",
+	"commit_msg": "feat(agent): add context routing (#52)",
+	"plan_file": ".plans/add-context-routing.md",
+	"title": "Add context-based model routing",
+	"labels": ["enhancement"],
+	"language": "en",
+	"repo_mode": "python"
 }
 ```
 
@@ -66,6 +67,7 @@ On startup, check for `.release-tmp/state.json`. If it exists, offer to resume.
 state.json) at the end of Phase 3 after everything succeeds.
 
 **On resume:** Use AskUserQuestion:
+
 - "Found incomplete release (issue #N, Phase M). Resume?"
 - Options: "Yes, resume from Phase {M+1}", "No, start fresh (will not create a duplicate issue)"
 
@@ -86,16 +88,16 @@ cat .claude/skills/release/config.json 2>/dev/null
 
 ```json
 {
-  "language": "en",
-  "repo_mode": "skills-gems",
-  "preflight_confirm": false
+	"language": "en",
+	"repo_mode": "skills-gems",
+	"preflight_confirm": false
 }
 ```
 
-| Field | Effect when set |
-|-------|----------------|
-| `language` | Skip Step 1.5 — use this language directly |
-| `repo_mode` | Skip detection — use this mode directly; validation still runs |
+| Field                      | Effect when set                                                                 |
+| -------------------------- | ------------------------------------------------------------------------------- |
+| `language`                 | Skip Step 1.5 — use this language directly                                      |
+| `repo_mode`                | Skip detection — use this mode directly; validation still runs                  |
 | `preflight_confirm: false` | Skip the confirmation gate — validation runs silently without asking "Proceed?" |
 
 All fields are optional. Missing fields fall back to the interactive flow.
@@ -127,13 +129,13 @@ git status --short
 
 Classify into one or more modes:
 
-| Signal detected | Mode |
-|-----------------|------|
+| Signal detected                                                  | Mode            |
+| ---------------------------------------------------------------- | --------------- |
 | `skills/` directory exists AND changed files are under `skills/` | **skills-gems** |
-| `package.json` exists | **npm** |
-| `pyproject.toml` or `uv.lock` exists | **python** |
-| Two or more of the above | **monorepo** |
-| None of the above | **generic** |
+| `package.json` exists                                            | **npm**         |
+| `pyproject.toml` or `uv.lock` exists                             | **python**      |
+| Two or more of the above                                         | **monorepo**    |
+| None of the above                                                | **generic**     |
 
 **If `preflight_confirm` is `false` in config:** announce mode and proceed.
 
@@ -142,6 +144,7 @@ Classify into one or more modes:
 > "Detected: **\<mode\>**. Validation will run: \<summary from pattern file\>. Proceed?"
 
 Options:
+
 - "Yes, proceed" (Recommended)
 - "Skip validation"
 - "Override mode" → follow-up AskUserQuestion: skills-gems / npm / python / monorepo / generic
@@ -153,6 +156,7 @@ Options:
 ### Step 1: Gather Context
 
 From the session, identify:
+
 - What feature/fix was implemented
 - Which files were modified
 - What the key changes were
@@ -163,6 +167,7 @@ From the session, identify:
 **If `language` is set in config:** skip, use the configured language.
 
 Otherwise, use AskUserQuestion:
+
 - "What language should the issue, plan, and release notes be written in?"
 - Options: "English", "Japanese (日本語)", "Other" (free text)
 
@@ -172,12 +177,14 @@ always stay in English (git convention).
 ### Step 2: Ask for Title
 
 Use AskUserQuestion:
+
 - 3 suggested titles (concise, action-oriented)
 - "Other" option for free input
 
 ### Step 3: Ask for Labels
 
 Use AskUserQuestion with multiSelect=true:
+
 - Options: enhancement, bug, documentation, refactor
 - "Other" for custom labels (comma-separated)
 
@@ -190,6 +197,7 @@ git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0"
 ```
 
 Strip the `v` prefix to get the current version number. Use AskUserQuestion:
+
 - patch: v{x}.{y}.{z+1}
 - minor: v{x}.{y+1}.0
 - major: v{x+1}.0.0
@@ -224,6 +232,7 @@ gh api repos/{owner}/{repo}/milestones -f title="<version>" -f state="open"
 Read `SKILLS_DIR/templates/issue-body.md` for the body format.
 
 Follow the **Safe GitHub Body Write** pattern:
+
 1. Write issue body to `.release-tmp/issue-body.md`
 2. Create issue with `--body-file .release-tmp/issue-body.md`
 3. Verify body is not empty
@@ -240,6 +249,7 @@ gh issue create \
 Omit `--milestone` if version was skipped.
 
 **Verify:**
+
 ```bash
 BODY_LEN=$(gh issue view <issue-number> --json body --jq '.body | length')
 if [ "$BODY_LEN" -eq 0 ]; then
@@ -276,6 +286,7 @@ git rev-list --count HEAD..@{u}
 ```
 
 If remote has new commits, use AskUserQuestion:
+
 - "Remote has new commits. Pull with rebase before continuing?"
 - Options: "Yes, pull --rebase", "No, continue anyway", "Cancel"
 
@@ -296,11 +307,13 @@ If validation fails, stop — do not continue until resolved.
 Check whether `README.md` and `CHANGELOG.md` need updating based on changes in this release:
 
 **README.md — check for:**
+
 - New skills or commands not yet listed
 - Removed or renamed skills/commands still listed
 - Installation instructions referencing outdated paths
 
 **CHANGELOG.md — check for:**
+
 - Missing entry for the current version being released
 
 If updates are needed, make them now — they land in the same commit as the code.
@@ -341,6 +354,7 @@ git status --short
 ```
 
 Use AskUserQuestion:
+
 - "Commit these changes?"
 - Show the commit message from Step 7
 - Options: "Yes, use this message", "No, use custom message", "Cancel"
@@ -360,6 +374,7 @@ git tag v<new-version>
 ### Step 13: Push to Remote
 
 Use AskUserQuestion:
+
 - "Push commits and tags to remote?"
 - Options: "Yes, push now", "No, I'll push manually", "Cancel"
 
@@ -376,6 +391,7 @@ On failure: show manual command.
 Read `SKILLS_DIR/templates/release-notes.md` for the format.
 
 Follow the **Safe GitHub Body Write** pattern:
+
 1. Write release notes to `.release-tmp/release-notes.md`
 2. Create release with `--notes-file .release-tmp/release-notes.md`
 3. Verify body is not empty
@@ -387,6 +403,7 @@ gh release create v<version> \
 ```
 
 **Verify:**
+
 ```bash
 BODY_LEN=$(gh release view v<version> --json body --jq '.body | length')
 if [ "$BODY_LEN" -eq 0 ]; then
@@ -421,6 +438,7 @@ Only clean up after both issue and release bodies are verified.
 ### Step 17: Output Success
 
 **If config did not exist at startup**, use AskUserQuestion:
+
 - "Save these preferences for future runs? (skips detection and language prompts)"
 - Options: "Yes, save to config.json", "No, ask me each time"
 
@@ -452,14 +470,14 @@ Use markdown link syntax so URLs are clickable in the IDE:
 
 ## Error Handling
 
-| Scenario | Action |
-|----------|--------|
-| Remote fetch fails | Warn and continue |
-| Pull conflicts | Stop, instruct to resolve manually |
-| Validation fails | Stop, AskUserQuestion: skip or fix |
-| Commit fails | Stop (likely pre-commit hook) |
+| Scenario           | Action                                             |
+| ------------------ | -------------------------------------------------- |
+| Remote fetch fails | Warn and continue                                  |
+| Pull conflicts     | Stop, instruct to resolve manually                 |
+| Validation fails   | Stop, AskUserQuestion: skip or fix                 |
+| Commit fails       | Stop (likely pre-commit hook)                      |
 | Tag already exists | Stop, AskUserQuestion with next version suggestion |
-| Push fails | Warn, show manual command |
-| gh not installed | Warn, provide manual release URL |
-| Issue body empty | Stop, do not continue (Safe Body Write pattern) |
-| Release body empty | Stop, do not continue (Safe Body Write pattern) |
+| Push fails         | Warn, show manual command                          |
+| gh not installed   | Warn, provide manual release URL                   |
+| Issue body empty   | Stop, do not continue (Safe Body Write pattern)    |
+| Release body empty | Stop, do not continue (Safe Body Write pattern)    |

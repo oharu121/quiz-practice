@@ -17,11 +17,11 @@ Group changed files by their top-level package directory (e.g. `packages/api/`, 
 
 For each changed package directory, detect its type and run the matching pattern:
 
-| Package signal | Pattern to follow |
-|----------------|------------------|
-| `package.json` present | npm pattern |
-| `pyproject.toml` or `uv.lock` present | python pattern |
-| `skills/` directory present | skills-gems pattern |
+| Package signal                        | Pattern to follow   |
+| ------------------------------------- | ------------------- |
+| `package.json` present                | npm pattern         |
+| `pyproject.toml` or `uv.lock` present | python pattern      |
+| `skills/` directory present           | skills-gems pattern |
 
 Read and follow the appropriate `SKILLS_DIR/patterns/<type>.md` for each package.
 Each sub-pattern runs its **full validation suite** — no separate validation later.
@@ -40,6 +40,7 @@ Validation results:
 ## On Any Failure
 
 Use AskUserQuestion:
+
 - "Validation failed in \<package\>. How do you want to proceed?"
 - Options: "Fix first (cancel release)", "Skip failed package and continue", "Skip all validation"
 
@@ -54,6 +55,7 @@ State: "All package validations passed." and continue.
 When Step 11 (Bump Version) runs for a monorepo:
 
 Detect the root version management strategy:
+
 - If root `package.json` has a `version` field → use npm pattern for root
 - If root `pyproject.toml` exists → use python pattern for root
 - If neither → tags only (no file-based version bump)

@@ -1,0 +1,7 @@
+build
+.svelte-kit
+node_modules
+.vercel
+pnpm-lock.yaml
+keepitup_questions.json
+keepitup_questions_en.json

@@ -1,9 +1,7 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
 	import type { Question } from '$lib/types';
 	import { quizState } from '$lib/state.svelte';
 	import { quizEngine } from '$lib/quiz-engine.svelte';
-	import { shuffle } from '$lib/utils';
 	import { swipeable } from '$lib/actions/swipeable';
 	import { slide } from 'svelte/transition';
 	import ChoiceButton from '$lib/components/ChoiceButton.svelte';
@@ -15,9 +13,7 @@
 	import questionsData from '$lib/data/questions.json';
 	const allQuestions: Question[] = questionsData as Question[];
 
-	const bookmarkedQuestions = $derived(
-		allQuestions.filter((q) => quizState.isBookmarked(q.id))
-	);
+	const bookmarkedQuestions = $derived(allQuestions.filter((q) => quizState.isBookmarked(q.id)));
 
 	let started = $state(false);
 
@@ -81,7 +77,7 @@
 			</div>
 
 			<div class="choices">
-				{#each quizEngine.current.choices as choice, i}
+				{#each quizEngine.current.choices as choice, i (i)}
 					<ChoiceButton
 						index={i}
 						text={choice}
@@ -110,7 +106,12 @@
 					{/if}
 				</button>
 			{:else}
-				<div class="result-banner" class:correct={quizEngine.getResult()} class:incorrect={!quizEngine.getResult()} transition:slide>
+				<div
+					class="result-banner"
+					class:correct={quizEngine.getResult()}
+					class:incorrect={!quizEngine.getResult()}
+					transition:slide
+				>
 					{quizEngine.getResult() ? 'Correct!' : 'Incorrect'}
 				</div>
 				<div class="explanation" transition:slide>
@@ -122,12 +123,16 @@
 
 		<div class="quiz-nav">
 			<button class="nav-btn" disabled={!quizEngine.hasPrev} onclick={() => quizEngine.prev()}>
-				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6" /></svg>
+				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+					><path d="M15 18l-6-6 6-6" /></svg
+				>
 				Prev
 			</button>
 			<button class="nav-btn" disabled={!quizEngine.hasNext} onclick={() => quizEngine.next()}>
 				Next
-				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6" /></svg>
+				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+					><path d="M9 18l6-6-6-6" /></svg
+				>
 			</button>
 		</div>
 	{/if}

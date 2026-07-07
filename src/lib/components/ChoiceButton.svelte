@@ -30,16 +30,16 @@
 	});
 </script>
 
-<button
-	class="choice {stateClass}"
-	disabled={submitted}
-	{onclick}
->
+<button class="choice {stateClass}" disabled={submitted} {onclick}>
 	<span class="letter" class:check={isMulti}>
 		{#if submitted && isCorrect}
-			<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5" /></svg>
+			<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
+				><path d="M20 6L9 17l-5-5" /></svg
+			>
 		{:else if submitted && wasSelected && !isCorrect}
-			<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M18 6L6 18M6 6l12 12" /></svg>
+			<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
+				><path d="M18 6L6 18M6 6l12 12" /></svg
+			>
 		{:else}
 			{LETTERS[index]}
 		{/if}

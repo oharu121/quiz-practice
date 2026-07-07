@@ -32,6 +32,7 @@ If no test files are found, skip pytest and note it.
 ## On Failure
 
 Use AskUserQuestion:
+
 - "Validation failed. How do you want to proceed?"
 - Options: "Fix first (cancel release)", "Skip validation and continue"
 

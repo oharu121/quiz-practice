@@ -27,20 +27,21 @@ infrastructure are we reusing? What constraints shaped the design?>
 ## Changes
 
 <Organized by component or numbered steps. For each change:
+
 - What was added/modified and why
 - Implementation specifics: command names, config fields, API endpoints
 - How it connects to existing commands or structure>
 
 ## Files Modified
 
-| File | Change |
-|------|--------|
+| File                       | Change                 |
+| -------------------------- | ---------------------- |
 | [file.md](path/to/file.md) | <what changed and why> |
 
 ## Guard Rails
 
-| Scenario | Behavior |
-|----------|----------|
+| Scenario              | Behavior       |
+| --------------------- | -------------- |
 | <realistic edge case> | <what happens> |
 
 ## Verification

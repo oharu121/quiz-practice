@@ -43,11 +43,7 @@
 		<span class="question-count">{allQuestions.length} questions</span>
 	</header>
 
-	<FilterBar
-		questions={allQuestions}
-		{activeFilter}
-		onchange={(mode) => (activeFilter = mode)}
-	/>
+	<FilterBar questions={allQuestions} {activeFilter} onchange={(mode) => (activeFilter = mode)} />
 
 	<div class="start-section">
 		<label class="shuffle-toggle">
@@ -61,7 +57,11 @@
 
 	{#if filtered.length === 0}
 		<EmptyState
-			icon={activeFilter === 'bookmarked' ? 'bookmark' : activeFilter === 'incorrect' ? 'check' : 'search'}
+			icon={activeFilter === 'bookmarked'
+				? 'bookmark'
+				: activeFilter === 'incorrect'
+					? 'check'
+					: 'search'}
 			message={activeFilter === 'bookmarked'
 				? 'No bookmarked questions yet. Bookmark questions while studying to review them here.'
 				: activeFilter === 'incorrect'

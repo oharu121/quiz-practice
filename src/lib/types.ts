@@ -1,10 +1,5 @@
 export type Category =
-	| 'CLF_Beginner'
-	| 'CLF_Theme'
-	| 'CLF_Multi'
-	| 'AIF_Beginner'
-	| 'AIF_Theme'
-	| 'AIF_Multi';
+	'CLF_Beginner' | 'CLF_Theme' | 'CLF_Multi' | 'AIF_Beginner' | 'AIF_Theme' | 'AIF_Multi';
 
 export interface Question {
 	id: string;

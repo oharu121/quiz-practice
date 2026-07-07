@@ -17,23 +17,23 @@ Use this format when creating the GitHub issue in Step 6b.
 
 ### AC-1: <First criterion name>
 
-| Criteria | Description |
-|----------|-------------|
-| Given | <precondition> |
-| When | <action> |
-| Then | <expected result> |
-| Verify | <see Verify field guidelines below> |
-| Evidence | |
+| Criteria | Description                         |
+| -------- | ----------------------------------- |
+| Given    | <precondition>                      |
+| When     | <action>                            |
+| Then     | <expected result>                   |
+| Verify   | <see Verify field guidelines below> |
+| Evidence |                                     |
 
 ### AC-2: <Second criterion name>
 
-| Criteria | Description |
-|----------|-------------|
-| Given | <precondition> |
-| When | <action> |
-| Then | <expected result> |
-| Verify | <see Verify field guidelines below> |
-| Evidence | |
+| Criteria | Description                         |
+| -------- | ----------------------------------- |
+| Given    | <precondition>                      |
+| When     | <action>                            |
+| Then     | <expected result>                   |
+| Verify   | <see Verify field guidelines below> |
+| Evidence |                                     |
 
 ---
 
@@ -44,11 +44,11 @@ Plan file: [.plans/<filename>.md](.plans/<filename>.md)
 
 ## Verify Field Guidelines
 
-| Value | When to use |
-|-------|-------------|
+| Value              | When to use                                                            |
+| ------------------ | ---------------------------------------------------------------------- |
 | `auto — <command>` | A shell command can verify this (e.g. `auto — grep -r "pattern" src/`) |
-| `auto` | Determinable from Given/When/Then without a specific command |
-| `manual` | Requires human eyes — UI behaviour, subjective output, visual checks |
+| `auto`             | Determinable from Given/When/Then without a specific command           |
+| `manual`           | Requires human eyes — UI behaviour, subjective output, visual checks   |
 
 ## AC Rules
 

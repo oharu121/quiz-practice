@@ -18,7 +18,11 @@
 	<div class="card-footer">
 		<div class="card-status">
 			{#if history}
-				<span class="dot" class:correct={history.last_result === 'correct'} class:incorrect={history.last_result === 'incorrect'}></span>
+				<span
+					class="dot"
+					class:correct={history.last_result === 'correct'}
+					class:incorrect={history.last_result === 'incorrect'}
+				></span>
 				<span class="stat">{history.correct}/{history.attempts}</span>
 			{/if}
 		</div>
