@@ -13,7 +13,7 @@
 		onchange: (mode: FilterMode) => void;
 	} = $props();
 
-	const filters: FilterMode[] = ['all', 'clf', 'aif', 'bookmarked', 'incorrect'];
+	const filters: FilterMode[] = ['all', 'clf', 'aif', 'bookmarked', 'incorrect', 'unanswered'];
 
 	function getCount(mode: FilterMode): number {
 		return filterQuestions(questions, mode, {

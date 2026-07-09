@@ -25,6 +25,8 @@ export function filterQuestions(
 			return questions.filter((q) => state.bookmarks.includes(q.id));
 		case 'incorrect':
 			return questions.filter((q) => state.history[q.id]?.last_result === 'incorrect');
+		case 'unanswered':
+			return questions.filter((q) => !state.history[q.id]);
 	}
 }
 
@@ -58,5 +60,6 @@ export const FILTER_LABELS: Record<FilterMode, string> = {
 	clf: 'CLF',
 	aif: 'AIF',
 	bookmarked: 'Bookmarked',
-	incorrect: 'Incorrect'
+	incorrect: 'Incorrect',
+	unanswered: 'New'
 };

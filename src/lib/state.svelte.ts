@@ -68,6 +68,10 @@ class QuizStateManager {
 	getHistory(id: string) {
 		return this.history[id];
 	}
+
+	resetProgress() {
+		this.history = {};
+	}
 }
 
 export const quizState = new QuizStateManager();

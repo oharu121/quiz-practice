@@ -23,4 +23,4 @@ export interface QuizState {
 	history: Record<string, QuestionHistory>;
 }
 
-export type FilterMode = 'all' | 'clf' | 'aif' | 'bookmarked' | 'incorrect';
+export type FilterMode = 'all' | 'clf' | 'aif' | 'bookmarked' | 'incorrect' | 'unanswered';
