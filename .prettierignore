@@ -5,3 +5,9 @@ node_modules
 pnpm-lock.yaml
 keepitup_questions.json
 keepitup_questions_en.json
+
+# Machine-local Claude Code permissions, rewritten by the tool with its own
+# formatting. It is not in this repo's .gitignore, so `pnpm format:check` sees it
+# on any machine whose global git ignore does not hide it — and failing the
+# release gate on a file nobody edits by hand is noise.
+.claude/settings.local.json

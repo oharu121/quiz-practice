@@ -34,9 +34,9 @@ infrastructure are we reusing? What constraints shaped the design?>
 
 ## Files Modified
 
-| File                       | Change                 |
-| -------------------------- | ---------------------- |
-| [file.md](path/to/file.md) | <what changed and why> |
+| File                                                                                   | Change                 |
+| -------------------------------------------------------------------------------------- | ---------------------- |
+| [path/to/file.ts](https://github.com/oharu121/quiz-practice/blob/main/path/to/file.ts) | <what changed and why> |
 
 ## Guard Rails
 
@@ -61,3 +61,8 @@ infrastructure are we reusing? What constraints shaped the design?>
 - **Changes names specific things**: command names, config fields, API endpoints, not vague descriptions
 - **Guard Rails are realistic**: scenarios that can actually happen, not hypothetical edge cases
 - **Verification is runnable**: steps someone can actually execute, not "test it works"
+- **File links are absolute `https://github.com/...` URLs**, never repo-relative. This file
+  gets copied verbatim into the GitHub issue (Step 6b) and the PR body (Step 13), both of
+  which render at a path where a relative link 404s. Get the base with
+  `gh repo view --json url -q .url` and use `blob/main`, not the release branch — that
+  branch is deleted by the squash merge.

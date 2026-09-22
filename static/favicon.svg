@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+	<title>AWS Quiz Practice</title>
+	<rect width="512" height="512" fill="#232f3e" />
+	<path
+		d="M176 196a80 80 0 1 1 80 80v44"
+		fill="none"
+		stroke="#ff9900"
+		stroke-width="44"
+		stroke-linecap="round"
+	/>
+	<circle cx="256" cy="374" r="26" fill="#ff9900" />
+</svg>
