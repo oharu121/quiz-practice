@@ -7,7 +7,9 @@
  *   pnpm exec node scripts/generate-icons.mjs
  *
  * The source SVG is full-bleed on purpose: iOS applies its own corner mask, and Android's
- * maskable crop only guarantees the central 80%, which the glyph stays well inside.
+ * maskable crop only guarantees the central 80%, which the glyph stays well inside. That is
+ * why one 512 PNG serves both `any` and `maskable` — a separate maskable file would be
+ * byte-identical to this one.
  */
 import { readFile, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
@@ -20,7 +22,6 @@ const source = await readFile(resolve(root, 'static/favicon.svg'));
 const targets = [
 	{ file: 'icon-192.png', size: 192 },
 	{ file: 'icon-512.png', size: 512 },
-	{ file: 'icon-512-maskable.png', size: 512 },
 	{ file: 'apple-touch-icon.png', size: 180 }
 ];
 

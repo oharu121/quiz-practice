@@ -23,11 +23,37 @@
 		if (!('serviceWorker' in navigator)) return;
 		serviceWorkerReady = navigator.serviceWorker.controller !== null;
 		if (!('caches' in window)) return;
+		// The worker writes this on activate, not install, so it names the worker actually
+		// serving this page rather than one still waiting to take over.
 		caches
 			.match('/__sw-version')
 			.then((response) => response?.text())
-			.then((text) => (cachedVersion = text ?? null));
+			.then((text) => (cachedVersion = text ?? null))
+			.catch(() => (cachedVersion = null));
 	});
+
+	/** Both modals: take focus on open, close on Escape, restore focus on close. */
+	function modal(node: HTMLElement) {
+		const previous = document.activeElement as HTMLElement | null;
+		node.focus();
+
+		function onKeydown(event: KeyboardEvent) {
+			if (event.key === 'Escape') closeModals();
+		}
+		node.addEventListener('keydown', onKeydown);
+
+		return {
+			destroy() {
+				node.removeEventListener('keydown', onKeydown);
+				previous?.focus();
+			}
+		};
+	}
+
+	function closeModals() {
+		pendingImport = null;
+		showResetConfirm = false;
+	}
 
 	function backupFilename() {
 		const stamp = new Date().toISOString().slice(0, 10);
@@ -133,8 +159,12 @@
 
 	<section class="card">
 		<h2>Restore progress</h2>
-		<textarea bind:value={restoreText} placeholder="Paste a backup here" rows="4" spellcheck="false"
-		></textarea>
+		<textarea
+			bind:value={restoreText}
+			aria-label="Backup to restore"
+			placeholder="Paste a backup here"
+			rows="4"
+			spellcheck="false"></textarea>
 		<div class="actions">
 			<button
 				class="btn"
@@ -169,25 +199,27 @@
 </div>
 
 {#if pendingImport}
-	<div class="modal-backdrop" onclick={() => (pendingImport = null)} role="presentation">
+	<div class="modal-backdrop" onclick={closeModals} role="presentation">
 		<!-- svelte-ignore a11y_click_events_have_key_events -->
 		<div
 			class="modal"
 			role="dialog"
 			aria-modal="true"
+			aria-labelledby="restore-modal-title"
 			tabindex="-1"
+			use:modal
 			onclick={(e) => e.stopPropagation()}
 		>
-			<h2>Restore Progress</h2>
+			<h2 id="restore-modal-title">Restore Progress</h2>
 			<p>
 				This backup holds {pendingImport.summary.totalAnswers} answered questions and
 				{pendingImport.summary.totalBookmarks} bookmarks.
 				{pendingImport.summary.newAnswers} would be new here,
-				{pendingImport.summary.updatedAnswers} already exist with a different count, and
+				{pendingImport.summary.updatedAnswers} would replace what is stored here, and
 				{pendingImport.summary.newBookmarks} bookmarks would be added.
 			</p>
 			<div class="modal-actions">
-				<button class="modal-cancel" onclick={() => (pendingImport = null)}>Cancel</button>
+				<button class="modal-cancel" onclick={closeModals}>Cancel</button>
 				<button class="modal-confirm accent" onclick={applyImport}>Restore</button>
 			</div>
 		</div>
@@ -195,19 +227,21 @@
 {/if}
 
 {#if showResetConfirm}
-	<div class="modal-backdrop" onclick={() => (showResetConfirm = false)} role="presentation">
+	<div class="modal-backdrop" onclick={closeModals} role="presentation">
 		<!-- svelte-ignore a11y_click_events_have_key_events -->
 		<div
 			class="modal"
 			role="dialog"
 			aria-modal="true"
+			aria-labelledby="reset-modal-title"
 			tabindex="-1"
+			use:modal
 			onclick={(e) => e.stopPropagation()}
 		>
-			<h2>Reset Progress</h2>
+			<h2 id="reset-modal-title">Reset Progress</h2>
 			<p>Clear all answer history? Bookmarks will be kept.</p>
 			<div class="modal-actions">
-				<button class="modal-cancel" onclick={() => (showResetConfirm = false)}>Cancel</button>
+				<button class="modal-cancel" onclick={closeModals}>Cancel</button>
 				<button
 					class="modal-confirm"
 					onclick={() => {
@@ -315,8 +349,23 @@
 		cursor: pointer;
 	}
 
+	/* Visually hidden rather than display:none, which would drop the input out of the
+	   tab order and out of a screen reader's list of form controls. */
 	.file-btn input {
-		display: none;
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		padding: 0;
+		margin: -1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+		white-space: nowrap;
+		border: 0;
+	}
+
+	.file-btn:focus-within {
+		outline: 2px solid var(--color-selected-border);
+		outline-offset: 2px;
 	}
 
 	textarea {

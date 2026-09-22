@@ -27,6 +27,11 @@ is a schema change, not content.
   Restoring merges rather than overwriting: a question answered more times wins, ties go to
   the more recent attempt, and bookmarks combine — so restoring an older backup cannot roll
   back work done since it was taken, and importing the same backup twice changes nothing.
+  The confirmation dialog counts exactly what the restore will change, so nothing is
+  replaced without being named first.
+- Keyboard and screen-reader support for the new Settings surface: both confirmation
+  dialogs take focus, close on Escape and return focus afterwards, and every control is
+  reachable by tab.
 - A CI workflow running the same five checks the release gate does, on pull requests and on
   pushes to `main`.
 - `README.md` and this changelog.

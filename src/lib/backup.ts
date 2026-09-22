@@ -129,17 +129,25 @@ function wins(candidate: QuestionHistory, existing: QuestionHistory): boolean {
 /**
  * Describes what an import would change, so the confirmation dialog can be specific
  * instead of asking the user to trust a blind overwrite.
+ *
+ * This must agree with `mergeProgress` exactly. It decides the same question with the same
+ * `wins` predicate rather than re-deriving it: an earlier version counted an entry as
+ * changed only when `attempts` differed, which under-reported the attempts-tie case and so
+ * described a real overwrite of answer history as a no-op. The summary is the consent, so
+ * anything it fails to mention is a change the user did not agree to.
  */
 export function summarizeImport(current: QuizState, incoming: QuizState) {
-	const newAnswers = Object.keys(incoming.history).filter((id) => !(id in current.history)).length;
-	const updatedAnswers = Object.keys(incoming.history).filter(
-		(id) => id in current.history && incoming.history[id].attempts !== current.history[id].attempts
+	const ids = Object.keys(incoming.history);
+	const newAnswers = ids.filter((id) => !(id in current.history)).length;
+	const updatedAnswers = ids.filter(
+		(id) => id in current.history && wins(incoming.history[id], current.history[id])
 	).length;
-	const newBookmarks = incoming.bookmarks.filter((id) => !current.bookmarks.includes(id)).length;
+	const newBookmarks = new Set(incoming.bookmarks.filter((id) => !current.bookmarks.includes(id)))
+		.size;
 
 	return {
-		totalAnswers: Object.keys(incoming.history).length,
-		totalBookmarks: incoming.bookmarks.length,
+		totalAnswers: ids.length,
+		totalBookmarks: new Set(incoming.bookmarks).size,
 		newAnswers,
 		updatedAnswers,
 		newBookmarks

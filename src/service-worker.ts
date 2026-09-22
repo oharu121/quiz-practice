@@ -23,7 +23,12 @@ const CACHE = 'aws-quiz-v1';
  */
 const SHELL = `${base}/`;
 
-/** Written by install so the settings page can show which deploy is cached. */
+/**
+ * Names the deploy whose worker is actually serving pages, so the settings card can report
+ * it. Written from `activate`, not `install`: a worker that has installed but is still
+ * waiting is not the one answering fetches, and this app can sit in that state for a long
+ * time because it never calls skipWaiting().
+ */
 const VERSION_KEY = `${base}/__sw-version`;
 
 /** Content-hashed build output. A hit is always the right answer, so serve it cache-first. */
@@ -41,7 +46,6 @@ sw.addEventListener('install', (event) => {
 		(async () => {
 			const cache = await caches.open(CACHE);
 			await cache.addAll(PRECACHE);
-			await cache.put(VERSION_KEY, new Response(version));
 		})()
 	);
 	// No skipWaiting: the running session keeps the worker it started with, so a deploy can
@@ -65,27 +69,44 @@ sw.addEventListener('activate', (event) => {
 					.filter((request) => !keep.has(new URL(request.url).pathname))
 					.map((request) => cache.delete(request))
 			);
+
+			await cache.put(VERSION_KEY, new Response(version));
 		})()
 	);
 	// No clients.claim(), for the same reason as skipWaiting above.
 });
 
-async function cacheFirst(request: Request): Promise<Response> {
+/**
+ * Cache writes are handed to `event.waitUntil` rather than left floating: `respondWith`
+ * settles as soon as the response is returned, and the browser is free to kill the worker
+ * at that point, which would drop the write and leave an asset uncached that the offline
+ * card has already implied is safe. The catch is for a full storage jar — small on an
+ * installed iOS app — and for responses `Cache.put` refuses, such as a 206.
+ */
+function store(event: FetchEvent, cache: Cache, key: Request | string, response: Response) {
+	event.waitUntil(cache.put(key, response.clone()).catch(() => undefined));
+}
+
+async function cacheFirst(event: FetchEvent, request: Request): Promise<Response> {
 	const cache = await caches.open(CACHE);
 	const cached = await cache.match(request);
 	if (cached) return cached;
 
 	const response = await fetch(request);
-	if (response.ok) cache.put(request, response.clone());
+	if (response.ok) store(event, cache, request, response);
 	return response;
 }
 
-async function networkFirst(request: Request, fallbackKey?: string): Promise<Response> {
+async function networkFirst(
+	event: FetchEvent,
+	request: Request,
+	fallbackKey?: string
+): Promise<Response> {
 	const cache = await caches.open(CACHE);
 	try {
 		const response = await fetch(request);
 		if (response.ok) {
-			cache.put(fallbackKey ?? request, response.clone());
+			store(event, cache, fallbackKey ?? request, response);
 			return response;
 		}
 		// A navigation that 404s means the host is not rewriting unknown paths to the shell.
@@ -112,7 +133,7 @@ sw.addEventListener('fetch', (event) => {
 	if (url.pathname.endsWith('/_app/version.json')) return;
 
 	if (IMMUTABLE.has(url.pathname)) {
-		event.respondWith(cacheFirst(request));
+		event.respondWith(cacheFirst(event, request));
 		return;
 	}
 
@@ -120,9 +141,9 @@ sw.addEventListener('fetch', (event) => {
 	// shell current — cache-first here would pin the app to the deploy it first cached —
 	// and the cached shell is what makes those URLs work on a plane.
 	if (request.mode === 'navigate') {
-		event.respondWith(networkFirst(request, SHELL));
+		event.respondWith(networkFirst(event, request, SHELL));
 		return;
 	}
 
-	event.respondWith(networkFirst(request));
+	event.respondWith(networkFirst(event, request));
 });

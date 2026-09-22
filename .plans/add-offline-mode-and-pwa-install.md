@@ -81,7 +81,12 @@ holds pure functions with no Svelte runes, so they are testable without a DOM:
   re-importing the same backup a no-op. Bookmarks union, because a resurrected bookmark
   costs a tap and a lost one costs a question you meant to revisit.
 - `summarizeImport` reports what an import would change, so the confirmation dialog can
-  name numbers instead of asking for blind trust.
+  name numbers instead of asking for blind trust. It decides that with the same `wins`
+  predicate `mergeProgress` uses, rather than its own comparison. Code review caught the
+  version that did not: it counted an entry as changed only when `attempts` differed, so an
+  attempts tie resolved by `last_seen` — a second device answering the same question later,
+  and worse — was previewed as "no changes" and then silently lowered the stored `correct`
+  count. The summary is the consent, so the two cannot be allowed to drift.
 
 [`state.svelte.ts`](https://github.com/oharu121/quiz-practice/blob/main/src/lib/state.svelte.ts)
 gains `exportProgress`, `previewImport` and `importProgress` beside the existing
@@ -94,8 +99,13 @@ New [`/settings`](https://github.com/oharu121/quiz-practice/blob/main/src/routes
 with four cards: offline status, backup, restore, reset. Backup offers clipboard copy and a
 `.json` download; restore accepts a paste or a file and shows a preview modal before
 applying. The offline card reads `navigator.serviceWorker.controller` and a `__sw-version`
-entry the worker writes into its cache, so it reports whether this browser is actually
-running the worker rather than asserting which browsers do.
+entry the worker writes **on activate**, so it names the worker actually serving the page
+rather than one still waiting to take over — and so reports whether this browser is running
+a worker at all, rather than asserting which browsers do.
+
+Both modals take focus when opened, close on Escape and restore focus to their trigger. The
+file input is visually hidden rather than `display: none`, which would have dropped
+"Restore from file" out of the tab order entirely.
 
 Reset moved here from the browse page, consolidating the destructive actions in one place.
 `BottomNav` gains a fourth item; the nav is a flex row of equal children, so no layout
@@ -121,8 +131,10 @@ declares `display: standalone` with the existing `#232f3e` theme colour. The sto
 logo was replaced by a purpose-drawn mark — an AWS-orange question glyph on navy, full
 bleed, glyph inside the central 80% so Android's maskable crop cannot clip it.
 [`scripts/generate-icons.mjs`](https://github.com/oharu121/quiz-practice/blob/main/scripts/generate-icons.mjs)
-rasterises it to 192, 512, 512-maskable and a 180 px `apple-touch-icon`. It is run by hand
-and its output is committed, so `pnpm build` stays free of `sharp`.
+rasterises it to 192, 512 and a 180 px `apple-touch-icon`. One 512 PNG is declared
+`"purpose": "any maskable"` rather than shipping a separate maskable file, which review
+found was byte-identical to it. The script is run by hand and its output is committed, so
+`pnpm build` stays free of `sharp`.
 
 ### 5. Release infrastructure
 
@@ -180,7 +192,7 @@ its own formatting and which was failing `pnpm format:check` on a file nobody ed
 Unit and static checks:
 
 ```bash
-pnpm test          # 38 tests, incl. 8 covering every mergeProgress rule
+pnpm test          # 42 tests, covering every merge rule and preview/merge agreement
 pnpm check         # 0 errors
 pnpm lint
 pnpm format:check

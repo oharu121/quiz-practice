@@ -130,6 +130,71 @@ describe('summarizeImport', () => {
 		expect(summary.updatedAnswers).toBe(0);
 		expect(summary.newBookmarks).toBe(0);
 	});
+
+	it('counts an attempts tie that the backup wins on last_seen', () => {
+		const local: QuizState = {
+			bookmarks: [],
+			history: { q1: { attempts: 2, correct: 2, last_result: 'correct', last_seen: '2026-01-01' } }
+		};
+		const backup: QuizState = {
+			bookmarks: [],
+			history: {
+				q1: { attempts: 2, correct: 0, last_result: 'incorrect', last_seen: '2026-02-01' }
+			}
+		};
+		expect(summarizeImport(local, backup).updatedAnswers).toBe(1);
+	});
+
+	it('does not count an entry the merge would discard', () => {
+		const local: QuizState = {
+			bookmarks: [],
+			history: { q1: { attempts: 5, correct: 5, last_result: 'correct', last_seen: '2026-01-01' } }
+		};
+		const backup: QuizState = {
+			bookmarks: [],
+			history: {
+				q1: { attempts: 2, correct: 0, last_result: 'incorrect', last_seen: '2026-12-31' }
+			}
+		};
+		expect(summarizeImport(local, backup).updatedAnswers).toBe(0);
+	});
+
+	it('counts duplicated bookmark ids once', () => {
+		const backup: QuizState = { bookmarks: ['X', 'X', 'Y'], history: {} };
+		const summary = summarizeImport({ bookmarks: [], history: {} }, backup);
+		expect(summary.newBookmarks).toBe(2);
+		expect(summary.totalBookmarks).toBe(2);
+	});
+
+	it('never reports fewer changes than the merge actually makes', () => {
+		const cases: [QuizState, QuizState][] = [
+			[
+				{
+					bookmarks: ['A'],
+					history: { q1: { attempts: 2, correct: 2, last_result: 'correct', last_seen: '2026-01' } }
+				},
+				{
+					bookmarks: ['A', 'B'],
+					history: {
+						q1: { attempts: 2, correct: 0, last_result: 'incorrect', last_seen: '2026-02' },
+						q2: { attempts: 1, correct: 1, last_result: 'correct', last_seen: '2026-03' }
+					}
+				}
+			],
+			[{ bookmarks: [], history: {} }, sample],
+			[sample, sample]
+		];
+
+		for (const [current, incoming] of cases) {
+			const summary = summarizeImport(current, incoming);
+			const merged = mergeProgress(current, incoming);
+			const actuallyChanged = Object.keys(merged.history).filter(
+				(id) => merged.history[id] !== current.history[id]
+			).length;
+			expect(summary.newAnswers + summary.updatedAnswers).toBe(actuallyChanged);
+			expect(summary.newBookmarks).toBe(merged.bookmarks.length - current.bookmarks.length);
+		}
+	});
 });
 
 describe('mergeProgress', () => {
