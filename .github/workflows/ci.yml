@@ -1,0 +1,77 @@
+name: CI
+
+# Documentation-only changes are skipped: nothing under these paths reaches
+# `pnpm check`, `pnpm lint`, `pnpm test` or `pnpm build`, so a run would install
+# and rebuild a byte-identical app.
+#
+# `.claude/**` stays on the list even though `scripts/release-guard.mjs` is
+# linted — that file deliberately lives outside `.claude/`, see its header.
+#
+# The list is spelled out twice on purpose; Actions does not resolve YAML
+# anchors. Keep the two copies identical. `paths-ignore` rather than `paths` so
+# a directory added later defaults to running CI instead of silently skipping.
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - '.claude/**'
+      - '.plans/**'
+      - 'README.md'
+      - 'CHANGELOG.md'
+      - 'CLAUDE.md'
+  pull_request:
+    paths-ignore:
+      - '.claude/**'
+      - '.plans/**'
+      - 'README.md'
+      - 'CHANGELOG.md'
+      - 'CLAUDE.md'
+
+# A newer push to the same branch makes the in-flight run obsolete. Nothing here
+# deploys, so cancelling is always safe — production ships from Vercel's own Git
+# integration, not from this workflow.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# Nothing here writes to the repo; checkout only needs to read it.
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: Check, lint, test & build
+    # Pinned rather than `ubuntu-latest`, so an image bump is a pull request CI
+    # has to pass instead of a change that lands mid-rollout on an unrelated PR
+    # and cannot be reproduced locally.
+    runs-on: ubuntu-26.04
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: pnpm/action-setup@v6.1.0
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # svelte-kit sync + svelte-check: TypeScript and Svelte diagnostics.
+      - name: Check types
+        run: pnpm check
+
+      # ESLint reaches paths svelte-check does not, notably `scripts/`.
+      - name: Lint
+        run: pnpm lint
+
+      - name: Check formatting
+        run: pnpm format:check
+
+      - name: Test
+        run: pnpm test
+
+      # Last, because it is the slowest and the least likely to fail alone.
+      - name: Build
+        run: pnpm build

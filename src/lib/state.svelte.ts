@@ -1,4 +1,5 @@
 import type { QuizState } from './types';
+import { mergeProgress, parseProgress, serializeProgress, summarizeImport } from './backup';
 
 const STORAGE_KEY = 'aws_quiz_state';
 
@@ -71,6 +72,27 @@ class QuizStateManager {
 
 	resetProgress() {
 		this.history = {};
+	}
+
+	snapshot(): QuizState {
+		return { bookmarks: this.bookmarks, history: this.history };
+	}
+
+	exportProgress(): string {
+		return serializeProgress(this.snapshot());
+	}
+
+	/** Describes what `importProgress` would change, without applying anything. */
+	previewImport(raw: string) {
+		return summarizeImport(this.snapshot(), parseProgress(raw));
+	}
+
+	/** Throws BackupParseError if `raw` is not a valid backup; state is left untouched. */
+	importProgress(raw: string) {
+		const merged = mergeProgress(this.snapshot(), parseProgress(raw));
+		// Assign fresh containers so the persisting $effect re-runs.
+		this.bookmarks = [...merged.bookmarks];
+		this.history = { ...merged.history };
 	}
 }
 
